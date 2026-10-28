@@ -63,7 +63,6 @@ No se requieren Visual Studio, Python, bibliotecas externas ni conexión a Inter
 |---|---|
 | `PINGPONG.ASM` | Código fuente del videojuego. |
 | `README.md` | Instrucciones de uso y explicación del funcionamiento. |
-| `INFORME_TECNICO.md` | Arquitectura, descripción de módulos, pruebas y conclusiones. |
 | `imagenes/interfaz.png` | Captura de la interfaz que debe agregar el equipo. |
 
 ## 4. Compilación y ejecución
