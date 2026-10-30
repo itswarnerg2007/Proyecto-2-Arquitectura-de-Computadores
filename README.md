@@ -1,203 +1,244 @@
-# Ping Pong de dos jugadores en ensamblador 8086
+# Ping Pong interactivo en ensamblador 8086
 
-Proyecto 2 del curso **Arquitectura de Computadoras (EIF205)** de la **Universidad Nacional, Escuela de Informática**.
+Videojuego de ping-pong para dos jugadores, desarrollado en lenguaje ensamblador y preparado para ejecutarse en **emu8086**.
 
-Juego desarrollado en ensamblador para ejecutarse en **emu8086**, con dos jugadores, puntuación independiente y velocidad progresiva de **5 a 7**.
+Proyecto del curso **Arquitectura de Computadoras, EIF205**, de la **Universidad Nacional, Escuela de Informática**.
 
-## Contenido
+**Profesor:** Cesar Valverde  
+**Finalidad:** educativa.
 
-1. Descripción del proyecto
-2. Características
-3. Requisitos
-4. Compilación y ejecución
-5. Controles
-6. Reglas y velocidad
-7. Interfaz del juego
-8. Organización del código
-9. Sintaxis del lenguaje ensamblador
-10. Memoria y representación gráfica
-11. Funcionamiento del juego
-12. Pruebas
-13. Solución de problemas
-14. Uso educativo
-15. Integrantes
+## Descripción del proyecto
 
-## 1. Descripción del proyecto
+Cada jugador controla una paleta ubicada en un extremo del tablero y debe devolver la pelota al rival. Cuando uno de los participantes falla, el oponente obtiene un punto. Gana quien alcance primero **cinco puntos**.
 
-El videojuego consiste en un duelo de ping-pong para dos personas que comparten un teclado. Cada jugador controla una paleta vertical ubicada en un extremo del tablero y debe interceptar la pelota para devolverla al rival.
+El juego incorpora tres mecánicas que modifican la dinámica del ping-pong tradicional:
 
-Cuando un jugador no logra devolverla, el oponente obtiene un punto. La partida termina cuando uno de los participantes alcanza cinco puntos.
+- Un obstáculo móvil en el centro del campo.
+- Paletas que disminuyen de tamaño conforme avanza la partida.
+- Un poder de ampliación temporal para cada jugador.
 
-El proyecto permite aplicar conceptos de arquitectura de computadoras mediante el uso de registros, procedimientos, macros, pila, interrupciones BIOS y DOS y acceso a memoria de video.
+También incluye velocidad progresiva de **5 a 7**, pausa, menú, revancha y récord de devoluciones consecutivas.
 
-## 2. Características
+## Características
 
-- Juego para dos participantes.
-- Paleta izquierda controlada con W y S.
-- Paleta derecha controlada con las flechas.
-- Menú principal.
-- Pausa y continuación de la partida.
-- Marcadores independientes.
-- Velocidad inicial de 5 y máxima de 7.
-- Cambios de trayectoria según la zona de impacto en la paleta.
-- Récord de devoluciones consecutivas durante la sesión.
-- Pantalla de resultados.
+- Dos jugadores en un mismo teclado.
+- Controles independientes para ambas paletas.
+- Puntuación individual.
+- Victoria al alcanzar cinco puntos.
+- Pelota con rebotes y cambios de dirección según el impacto.
+- Obstáculo central móvil.
+- Reducción progresiva de las paletas.
+- Habilidad de ampliación con un uso por jugador.
+- Aceleración durante los intercambios.
+- Pausa y continuación.
 - Revancha sin reiniciar el emulador.
-- Dibujo incremental para evitar borrar toda la pantalla en cada movimiento.
-- Código organizado en procedimientos y una macro de impresión.
+- Récord durante la sesión.
+- Dibujo incremental para reducir el parpadeo.
+- Código organizado mediante procedimientos y una macro.
 
-## 3. Requisitos
+## Archivos del proyecto
 
-Para ejecutar el proyecto se necesita:
+| Archivo o carpeta | Contenido |
+|---|---|
+| `PINGPONG.ASM` | Código fuente del videojuego. |
+| `README.md` | Instrucciones, reglas y explicación técnica. |
+| `INFORME_TECNICO.md` | Arquitectura, módulos, pruebas y conclusiones. |
+| `pruebas/RESULTADOS.md` | Resultados de las comprobaciones auxiliares. |
+| `imagenes/` | Carpeta destinada a las capturas de la interfaz. |
+
+El documento técnico en PDF puede agregarse al repositorio como documentación complementaria.
+
+## Requisitos
 
 - emu8086 instalado.
 - Un teclado.
 - El archivo `PINGPONG.ASM`.
-- Dos jugadores para controlar ambos lados.
+- Dos participantes.
 
-No se requieren Visual Studio, Python, bibliotecas externas ni conexión a Internet para jugar.
+Para jugar no se necesitan Visual Studio, Python, bibliotecas externas ni conexión a Internet.
 
-### Archivos del proyecto
-
-| Archivo | Descripción |
-|---|---|
-| `PINGPONG.ASM` | Código fuente del videojuego. |
-| `README.md` | Instrucciones de uso y explicación del funcionamiento. |
-| `imagenes/interfaz.png` | Captura de la interfaz que debe agregar el equipo. |
-
-## 4. Compilación y ejecución
+## Compilación y ejecución
 
 1. Descarga o clona el repositorio.
-2. Si descargaste un ZIP, descomprímelo.
-3. Abre emu8086.
+2. Si descargaste un archivo ZIP, descomprímelo.
+3. Abre **emu8086**.
 4. Selecciona **File → Open**.
-5. Busca y abre `PINGPONG.ASM`.
-6. Pulsa **Emulate** o **Compile and Emulate**, según la versión de emu8086.
-7. Si se solicita el formato de salida, selecciona **COM**.
-8. En la ventana del emulador, coloca **step delay ms** en **0**.
+5. Abre el archivo **PINGPONG.ASM**.
+6. Pulsa **Emulate** o **Compile and Emulate**.
+7. Si solicita un formato, selecciona **COM**.
+8. Coloca **step delay ms** en **0**.
 9. Pulsa **Run**.
-10. Haz clic dentro de la pantalla del juego y presiona **1** para comenzar.
+10. Haz clic dentro de la pantalla del juego y presiona **1**.
 
-**Nota:** `Single Step` ejecuta las instrucciones una por una y se utiliza para depurar. Para jugar se debe utilizar `Run`.
+**Importante:** `Single Step` ejecuta instrucciones individualmente y sirve para depurar. Para jugar se utiliza `Run`.
 
-Después de modificar el código, guarda el archivo y vuelve a compilarlo para ejecutar la versión actualizada.
+Después de modificar el código, guarda el archivo y vuelve a compilarlo.
 
-## 5. Controles
+## Controles
 
-| Pantalla o jugador | Tecla | Acción |
+| Jugador o pantalla | Tecla | Acción |
 |---|---|---|
-| Menú principal | 1 | Iniciar partida. |
-| Menú principal | 2 o ESC | Salir del programa. |
 | Jugador 1, izquierda | W | Subir la paleta verde. |
 | Jugador 1, izquierda | S | Bajar la paleta verde. |
+| Jugador 1 | Q | Activar la ampliación temporal. |
 | Jugador 2, derecha | Flecha arriba | Subir la paleta magenta. |
 | Jugador 2, derecha | Flecha abajo | Bajar la paleta magenta. |
+| Jugador 2 | L | Activar la ampliación temporal. |
 | Durante la partida | P | Pausar o continuar. |
-| Durante la partida | ESC | Volver al menú. |
+| Durante la partida | ESC | Regresar al menú. |
+| Menú | 1 | Iniciar partida. |
+| Menú | 2 o ESC | Salir. |
 | Pantalla de resultados | R | Iniciar una revancha. |
-| Pantalla de resultados | M | Volver al menú. |
-| Pantalla de resultados | ESC | Salir del programa. |
+| Pantalla de resultados | M | Regresar al menú. |
+| Pantalla de resultados | ESC | Salir. |
 
-Las letras de los controles también se aceptan en mayúscula.
+Las letras también se aceptan en mayúscula.
 
-La entrada utiliza eventos de teclado mediante BIOS. El comportamiento al mantener varias teclas presionadas depende de la repetición del teclado y del emulador, porque el programa no instala un controlador para registrar pulsaciones y liberaciones simultáneas.
+## Reglas del juego
 
-## 6. Reglas y velocidad
-
-### Reglas generales
-
-- Cada jugador controla una paleta de cinco celdas de altura.
-- Las paletas no pueden salir de los límites verticales del tablero.
+- Cada participante defiende su extremo con una paleta.
 - La pelota rebota en los bordes superior e inferior.
-- Al tocar una paleta, cambia su dirección horizontal.
-- Si un jugador falla, el rival recibe un punto.
-- Gana quien llegue primero a **5 puntos**.
-- Después de cada punto, la pelota vuelve al centro y sale hacia quien acaba de fallar.
+- El contacto con una paleta invierte su dirección horizontal.
+- Si un jugador no logra interceptarla, el rival obtiene un punto.
+- Gana quien llegue primero a **cinco puntos**.
+- Después de cada punto, la pelota reaparece en la zona central y se dirige inicialmente hacia quien falló.
+- La barrera central puede interceptar ese saque.
+- La parte superior de la paleta dirige la pelota hacia arriba; la inferior, hacia abajo. El centro conserva la dirección vertical.
 
-### Dirección de la pelota
+## Nuevas mecánicas de jugabilidad
 
-La zona de impacto influye en la trayectoria:
+### 1. Obstáculo central móvil
 
-- Un golpe en la parte superior de la paleta dirige la pelota hacia arriba.
-- Un golpe en la parte inferior la dirige hacia abajo.
-- Un golpe en el centro conserva la dirección vertical.
+Una barrera roja formada por cuatro caracteres `#` se desplaza verticalmente por el centro del tablero.
 
-### Velocidad progresiva
+- Ocupa la columna 33.
+- Se mueve una fila cada dos ticks de juego.
+- Cambia de dirección al alcanzar los límites.
+- Si la pelota choca contra ella, invierte su dirección horizontal.
+- La pelota puede pasar cuando su trayectoria no coincide con las filas ocupadas por la barrera.
+- Los contactos con el obstáculo no suman puntos ni aumentan el rally.
 
-| Devoluciones consecutivas | Velocidad |
+Esta mecánica obliga a reaccionar a cambios de dirección que no dependen únicamente del golpe del rival.
+
+### 2. Paletas de tamaño progresivo
+
+La altura normal de ambas paletas disminuye según la **suma de los puntos de los dos jugadores**:
+
+| Puntos totales | Altura normal de cada paleta |
 |---|---:|
-| 0 o 1 | 5 |
-| 2 o 3 | 6 |
-| 4 o más | 7 |
+| 0 o 1 | 5 celdas |
+| 2 o 3 | 4 celdas |
+| 4 o más | 3 celdas |
 
-La velocidad indica cuántos **subpasos** realiza la pelota en cada actualización. Cada subpaso avanza una celda por eje y comprueba las colisiones.
+Por ejemplo:
 
-La actualización se solicita una vez por tick del reloj BIOS. La rapidez efectiva también depende del rendimiento del emulador.
+- Con marcador **1–1**, las paletas miden cuatro celdas.
+- Con marcador **2–2**, las paletas miden tres celdas.
 
-El aumento de velocidad se aplica al número de subpasos de la siguiente actualización. Después de cada punto, la velocidad vuelve a 5.
+La reducción se aplica después de anotarse un punto. Los límites de movimiento y las colisiones se adaptan a la altura real de cada paleta.
 
-### Rally y récord
+### 3. Poder de ampliación temporal
 
-- **RALLY:** cantidad de devoluciones consecutivas del intercambio actual.
+Cada jugador puede activar una habilidad **una sola vez por partida completa**:
+
+- **Q:** jugador 1.
+- **L:** jugador 2.
+
+La habilidad amplía la paleta a **siete celdas durante 91 ticks de juego**, aproximadamente cinco segundos en un reloj BIOS normal.
+
+Reglas del poder:
+
+- La pausa no consume su duración.
+- Repetir la tecla no prolonga el efecto.
+- Anotar un punto no recarga el poder.
+- Si continúa activo cuando se anota un punto, conserva el tiempo restante.
+- Al terminar, la paleta recupera el tamaño normal correspondiente al marcador.
+- Una revancha o una nueva partida restablece los dos usos.
+
+| Estado | Significado |
+|---|---|
+| `LISTO` | El jugador puede activar su habilidad. |
+| `ACTIVO` | La paleta está ampliada temporalmente. |
+| `USADO` | La habilidad ya se consumió y no puede reutilizarse en esa partida. |
+
+## Velocidad progresiva
+
+La pelota comienza con velocidad **5** y aumenta durante cada intercambio:
+
+| Devoluciones consecutivas | Valor de VEL |
+|---|---:|
+| 0 o 1 | 05 |
+| 2 o 3 | 06 |
+| 4 o más | 07 |
+
+`VEL` indica la cantidad de **subpasos por actualización**, no cuadros por segundo.
+
+Cada subpaso avanza una celda por eje y comprueba las colisiones con los bordes, las paletas y la barrera. El aumento de velocidad se aplica a la siguiente actualización.
+
+Después de cada punto, la velocidad vuelve a **5**.
+
+## Rally y récord
+
+- **RALLY:** devoluciones consecutivas de las paletas durante el intercambio actual.
 - **RECORD RALLY:** mayor cantidad de devoluciones consecutivas lograda durante la sesión.
 
-Ambos contadores se limitan a 99. El récord se conserva al volver al menú o iniciar una revancha, pero se pierde al cerrar el programa porque no se almacena en disco.
+Los rebotes contra el obstáculo no incrementan estos contadores.
 
-## 7. Interfaz del juego
+El récord se conserva al volver al menú o iniciar una revancha, pero se pierde al cerrar el programa porque no se guarda en disco. Los contadores se limitan a 99.
 
-### Captura de la interfaz
+## Interfaz del juego
 
-<img width="1201" height="577" alt="image" src="https://github.com/user-attachments/assets/b4df61c4-3bcb-4587-aa06-4c493b4fc858" />
+### Captura de pantalla
+
+<img width="1197" height="570" alt="image" src="https://github.com/user-attachments/assets/5ecbd3ef-9874-4c9e-b53d-7f4a41f9921a" />
+
+*Figura 1. Interfaz con ambas paletas, obstáculo central, pelota, marcadores y estados de los poderes.*
 
 
-*Figura 1. Interfaz de Ping Pong con las dos paletas, la pelota y los marcadores.*
+### Indicadores de la pantalla
 
-
-### Elementos de la pantalla
-
-| Elemento | Descripción |
+| Elemento | Significado |
 |---|---|
-| J1 W/S | Puntuación del jugador izquierdo. |
-| J2 FLECHAS | Puntuación del jugador derecho. |
-| RECORD RALLY | Mejor intercambio de la sesión. |
-| RALLY | Devoluciones consecutivas del intercambio actual. |
-| VEL | Velocidad actual: 05, 06 o 07. |
+| `J1 W/S` | Puntuación del jugador izquierdo. |
+| `J2 FLECHAS` | Puntuación del jugador derecho. |
+| `RECORD RALLY` | Mejor intercambio de la sesión. |
+| `RALLY` | Devoluciones consecutivas actuales. |
+| `VEL` | Velocidad actual: 05, 06 o 07. |
+| `TAM J1/J2` | Altura real de ambas paletas. |
+| `Q J1` | Estado del poder del jugador 1. |
+| `L J2` | Estado del poder del jugador 2. |
 | Paleta verde | Jugador 1. |
 | Paleta magenta | Jugador 2. |
-| Pelota amarilla | Objeto que deben devolver ambos participantes. |
-| Líneas horizontales | Límites superior e inferior. |
-| Instrucciones inferiores | Recordatorio de controles y condición de victoria. |
+| Barrera roja | Obstáculo móvil. |
+| Pelota amarilla | Objeto que deben devolver. |
 
-Durante la pausa se muestra un mensaje. Al finalizar la partida aparece una pantalla que identifica al ganador y al perdedor y ofrece revancha, menú o salida.
+## Organización del código
 
-## 8. Organización del código
-
-| Procedimiento | Función |
+| Procedimiento | Responsabilidad |
 |---|---|
-| `inicializar` | Reinicia los puntos, las paletas y el estado de la partida. |
-| `centrarPelota` | Coloca la pelota en el centro y restablece el intercambio. |
-| `teclado` | Atiende los controles de los jugadores y las opciones de pausa y menú. |
-| `leerTick` | Consulta el reloj BIOS. |
-| `esperarTiempo` | Regula el avance mientras sigue atendiendo el teclado. |
-| `actualizar` | Ejecuta los subpasos correspondientes a la velocidad. |
-| `moverPelota` | Actualiza la posición y comprueba límites y extremos. |
-| `tocarPaleta` | Comprueba el contacto y actualiza dirección, rally y velocidad. |
-| `puntoJ1` | Suma un punto al jugador 1 y comprueba si ganó. |
-| `puntoJ2` | Suma un punto al jugador 2 y comprueba si ganó. |
-| `mostrarPausa` | Muestra o elimina el mensaje de pausa. |
-| `limpiar` | Limpia la pantalla al cambiar de pantalla principal. |
-| `dibujarBordes` | Dibuja los límites al iniciar una partida. |
-| `dibujar` | Actualiza la pelota y las paletas. |
-| `celda` | Escribe un carácter y su atributo en memoria de video. |
-| `pintarPaleta` | Dibuja una paleta de cinco celdas. |
-| `marcador` | Actualiza los indicadores de la partida. |
-| `numero` | Muestra un valor de 0 a 99 con dos dígitos. |
+| `inicializar` | Reiniciar puntos, posiciones, barrera, tamaños y poderes. |
+| `centrarPelota` | Preparar el saque y reiniciar rally y velocidad. |
+| `teclado` | Procesar controles, habilidades, pausa y menú. |
+| `leerTick` | Consultar el reloj BIOS. |
+| `esperarTiempo` | Regular las actualizaciones y calcular el tiempo transcurrido. |
+| `actualizar` | Actualizar las mecánicas y ejecutar los subpasos. |
+| `moverPelota` | Mover la pelota y comprobar límites y contactos. |
+| `tocarPaleta` | Detectar contacto según la altura real. |
+| `ajustarTamanos` | Calcular alturas y mantener las paletas dentro del tablero. |
+| `activarPoder1` / `activarPoder2` | Activar la ampliación si queda disponible. |
+| `actualizarExtras` | Actualizar la barrera y los temporizadores. |
+| `descontarPoderes` | Descontar duración y finalizar las ampliaciones. |
+| `puntoJ1` / `puntoJ2` | Sumar puntos, ajustar tamaños y comprobar victoria. |
+| `dibujar` | Actualizar los objetos sin borrar toda la pantalla. |
+| `pintarPaleta` | Dibujar una columna con la altura indicada. |
+| `celda` | Escribir un carácter y su atributo en memoria de video. |
+| `marcador` / `mostrarExtras` | Mostrar puntuaciones, tamaños y poderes. |
+| `mostrarPausa` | Mostrar u ocultar la pausa. |
+| `numero` | Presentar valores numéricos de dos dígitos. |
 
-La macro `IMPRIMIR` agrupa las instrucciones utilizadas para mostrar mensajes.
+## Fundamentos y sintaxis del ensamblador
 
-## 9. Sintaxis del lenguaje ensamblador
-
-### Configuración inicial
+### Configuración del programa
 
 ```asm
 #make_COM#
@@ -205,144 +246,56 @@ org 100h
 jmp inicio
 ```
 
-- `#make_COM#` indica a emu8086 que genere un programa COM.
-- `org 100h` establece el desplazamiento de carga utilizado por este formato.
-- `jmp inicio` evita ejecutar los datos iniciales y salta al comienzo del programa.
+- `#make_COM#` selecciona el formato COM en emu8086.
+- `org 100h` establece el desplazamiento de carga.
+- `jmp inicio` salta sobre los datos iniciales para comenzar la ejecución.
 
-Las directivas orientan al ensamblador; no son instrucciones ejecutadas por la CPU.
-
-### Declaración de datos
+### Declaración de variables
 
 ```asm
-puntos db 0
-velocidad db 5
-dxPelota db -1
-ultimoTick dw 0
+tamBase db 5
+tam1 db 5
+tam2 db 5
+usado1 db 0
+poder1 dw 0
+deltaTick dw 1
 ```
 
 - `db` reserva un byte.
 - `dw` reserva una palabra de dos bytes.
-- `dxPelota` utiliza 1 o -1 para representar la dirección horizontal.
-- `ultimoTick` guarda una referencia del reloj.
+- `tam1` y `tam2` contienen las alturas reales.
+- `usado1` indica si se consumió la carga de J1.
+- `poder1` contiene la duración restante.
+- `deltaTick` almacena el tiempo transcurrido entre actualizaciones.
 
-Los mensajes también se definen con `db`:
+Una carga consumida y un efecto activo son datos diferentes: al expirar la habilidad, `poder1` queda en cero, pero `usado1` permanece en uno.
 
-```asm
-barraTxt db ' J1 W/S: $'
-```
+### Orden de operandos
 
-El símbolo `$` marca el final de las cadenas mostradas mediante la función 09h de DOS. Los valores 13 y 10 presentes en otros mensajes representan retorno de carro y salto de línea.
-
-### Orden de los operandos
-
-La sintaxis sigue el orden:
+Las instrucciones utilizan el orden **destino, origen**:
 
 ```asm
-instruccion destino, origen
+mov poder1, 91
 ```
 
-Por ejemplo:
-
-```asm
-mov al, velocidad
-mov pasos, al
-```
-
-La primera instrucción copia la velocidad en AL. La segunda copia AL en la variable `pasos`. El origen conserva su valor.
-
-### Registros
-
-| Registro | Uso dentro del programa |
-|---|---|
-| AX | Operaciones y selección de servicios de interrupción. |
-| BX | Valores auxiliares, caracteres y atributos. |
-| CX | Contadores de repeticiones. |
-| DX | Coordenadas, direcciones de mensajes y resultados del reloj. |
-| DI | Desplazamientos en memoria de video. |
-| CS | Segmento de código. |
-| DS | Segmento utilizado para acceder a los datos. |
-| ES | Segmento utilizado para escribir en video. |
-| SP | Posición superior de la pila. |
-
-AX, BX, CX y DX tienen 16 bits. Sus mitades de 8 bits pueden utilizarse por separado; por ejemplo, AX se divide en AH y AL.
-
-### Comentarios y números hexadecimales
-
-```asm
-mov ax, 0b800h   ; Segmento de memoria de video
-```
-
-El punto y coma inicia un comentario. El sufijo `h` identifica un número hexadecimal. Se antepone un cero cuando el número hexadecimal empieza con una letra.
+Esta instrucción asigna 91 ticks de duración al poder del jugador 1.
 
 ### Comparaciones y saltos
 
 ```asm
-cmp puntos, 5
-jb puntoJ1Fin
-mov estado, 3
+cmp usado1, 0
+jne finActivarPoder1
 ```
 
-`cmp` compara los valores y modifica los indicadores del procesador sin guardar la resta. `jb` salta si el primer valor es menor en una comparación sin signo.
+`cmp` compara los valores y modifica los indicadores del procesador. `jne` evita volver a activar un poder utilizado.
 
-Si el puntaje ya no es menor que cinco, se establece el estado de victoria del jugador 1.
-
-| Instrucción | Significado |
-|---|---|
-| `jmp` | Salto incondicional. |
-| `je` | Salta si los valores son iguales. |
-| `jne` / `jnz` | Salta si el indicador de cero está desactivado. |
-| `jb` | Salta si es menor, sin signo. |
-| `jbe` | Salta si es menor o igual, sin signo. |
-| `ja` | Salta si es mayor, sin signo. |
-| `jae` | Salta si es mayor o igual, sin signo. |
-| `jnc` | Salta si no hay acarreo. |
-
-### Operaciones utilizadas
-
-| Instrucción | Función |
-|---|---|
-| `add` | Suma. |
-| `sub` | Resta. |
-| `inc` | Incrementa en uno. |
-| `dec` | Decrementa en uno. |
-| `neg` | Cambia el signo. |
-| `xor` | Operación lógica; se utiliza también para poner registros en cero. |
-| `mul` | Multiplicación sin signo. |
-| `div` | División sin signo. |
-| `shl` | Desplazamiento de bits a la izquierda. |
-| `loop` | Reduce CX y repite mientras no sea cero. |
+También se emplean `je`, `jb`, `jbe`, `ja`, `jae` y `jnc` para seleccionar caminos según los resultados de las comparaciones.
 
 ### Procedimientos y pila
 
-```asm
-leerTick proc
-    mov ah, 00h
-    int 1ah
-    mov ax, dx
-    ret
-leerTick endp
-```
+`proc` y `endp` delimitan procedimientos. `call` guarda la dirección de retorno en la pila y `ret` la recupera.
 
-`proc` y `endp` delimitan un procedimiento en el código fuente.
-
-```asm
-call leerTick
-```
-
-`call` guarda la dirección de retorno en la pila y transfiere el control al procedimiento. `ret` recupera esa dirección para continuar.
-
-`push` guarda una palabra en la pila y `pop` la recupera. Los registros deben restaurarse en orden inverso:
-
-```asm
-push ax
-push bx
-
-; Operaciones del procedimiento
-
-pop bx
-pop ax
-ret
-```
+`push` y `pop` permiten preservar registros, restaurándolos en orden inverso.
 
 ### Macro de impresión
 
@@ -354,152 +307,85 @@ IMPRIMIR macro cadena
 endm
 ```
 
-`lea` obtiene la dirección del mensaje. La macro prepara la función 09h y llama a DOS para mostrar la cadena.
+La macro obtiene la dirección del mensaje y utiliza DOS para mostrarlo. Las cadenas terminan con el símbolo `$`.
 
-Se utiliza así:
+### Interrupciones utilizadas
 
-```asm
-IMPRIMIR menuTxt
-```
-
-Una macro se expande en el lugar donde se utiliza; no requiere `call` ni `ret`.
-
-### Interrupciones
-
-| Interrupción | Función utilizada |
+| Interrupción | Uso |
 |---|---|
-| `INT 10h` | Configuración de video, cursor y limpieza de pantalla. |
+| `INT 10h` | Video, cursor y limpieza. |
 | `INT 16h` | Consulta y lectura del teclado. |
 | `INT 1Ah` | Consulta del reloj BIOS. |
-| `INT 21h` | Impresión de mensajes y caracteres y finalización del programa. |
+| `INT 21h` | Impresión de mensajes y finalización del programa. |
 
-La función concreta se selecciona colocando un valor en AH. Por ejemplo:
+## Memoria de video y dibujo
 
-```asm
-mov ah, 01h
-int 16h
-```
-
-Consulta si existe una tecla disponible sin esperar a que el usuario presione una.
-
-## 10. Memoria y representación gráfica
-
-El programa utiliza el modo texto de **80 columnas por 25 filas**.
-
-Al iniciar, establece DS igual a CS:
-
-```asm
-push cs
-pop ds
-```
-
-Para acceder a la memoria de video utiliza el segmento B800h.
+El programa utiliza modo texto de **80 columnas por 25 filas** y memoria de video en el segmento **B800h**.
 
 Cada celda ocupa dos bytes:
 
-- Un byte para el carácter.
-- Un byte para el atributo de color.
+- Carácter.
+- Atributo de color.
 
-La posición se calcula mediante:
+El desplazamiento se calcula mediante:
 
 ```text
 desplazamiento = 2 × (fila × 80 + columna)
 ```
 
-Los índices empiezan en cero. Por ejemplo, la fila 12 y la columna 32 corresponden al desplazamiento:
+Para reducir el parpadeo, se borran las posiciones anteriores y se dibujan las actuales. Los bordes se presentan al iniciar la partida y el marcador se actualiza cuando cambia.
 
-```text
-2 × (12 × 80 + 32) = 1984 bytes = 07C0h
-```
+Las variables `anteriorTam1` y `anteriorTam2` permiten borrar completamente una paleta grande antes de dibujarla más pequeña, evitando restos al finalizar una habilidad.
 
-La pelota se escribe usando el valor `0E4Fh`: 4Fh corresponde al carácter O y 0Eh al atributo amarillo.
+## Pruebas
 
-### Dibujo incremental
+Los siguientes estados corresponden a la validación manual reportada por los integrantes en emu8086.
 
-Para reducir el parpadeo:
+| Caso de prueba | Estado |
+|---|---|
+| Compilación y ejecución | Verificado y correcto |
+| Controles de ambos jugadores | Verificado y correcto |
+| Límites de las paletas | Verificado y correcto |
+| Rebotes superior e inferior | Verificado y correcto |
+| Colisiones con ambas paletas | Verificado y correcto |
+| Asignación de puntos | Verificado y correcto |
+| Aceleración de 5 a 7 | Verificado y correcto |
+| Movimiento y colisiones del obstáculo | Verificado y correcto |
+| Reducción progresiva de tamaños | Verificado y correcto |
+| Activación y expiración de poderes | Verificado y correcto |
+| Uso único de cada habilidad | Verificado y correcto |
+| Pausa y continuación | Verificado y correcto |
+| Condición de victoria | Verificado y correcto |
+| Revancha y recarga de poderes | Verificado y correcto |
+| Conservación del récord durante la sesión | Verificado y correcto |
+| Rendimiento y dibujo | Verificado y correcto |
 
-1. Se borra la posición anterior de la pelota y las paletas.
-2. Se dibujan sus nuevas posiciones.
-3. Se actualiza el marcador únicamente cuando cambia.
-4. Los bordes se dibujan al iniciar la partida.
+También se realizaron comprobaciones auxiliares de lógica, memoria de video y pila, incluyendo 1500 actualizaciones de estabilidad y un flujo completo con revancha y salida. Su método y alcance se describen en el informe técnico.
 
-No se limpia toda la pantalla en cada movimiento.
+## Problemas corregidos durante el desarrollo
 
-## 11. Funcionamiento del juego
+- **Pelota inmóvil:** se sustituyó la lectura directa del reloj por `INT 1Ah`.
+- **Parpadeo:** se eliminó el borrado completo de pantalla en cada movimiento.
+- **Lentitud:** se redujeron esperas y operaciones repetidas de dibujo.
+- **Salto condicional fuera de rango:** se utilizó una condición inversa seguida de un salto incondicional.
+- **Restos al cambiar de tamaño:** se incorporó el registro de alturas anteriores.
+- **Expiración de poderes:** se evita restar un intervalo mayor al tiempo restante.
+- **Reutilización del poder:** se separó la carga consumida de la duración activa.
 
-### Estados
+## Limitaciones conocidas
 
-| Valor de `estado` | Significado |
-|---:|---|
-| 0 | Partida en ejecución. |
-| 1 | Pausa. |
-| 2 | Solicitud de regreso al menú. |
-| 3 | Gana el jugador 1. |
-| 4 | Gana el jugador 2. |
+- El récord se conserva únicamente durante la sesión.
+- La velocidad efectiva depende del rendimiento del emulador.
+- La entrada por eventos BIOS puede limitar la repetición de varias teclas mantenidas simultáneamente.
+- La duración de cinco segundos del poder es aproximada según el reloj y la ejecución del entorno.
 
-### Ciclo principal
-
-Durante la partida, el programa:
-
-1. Atiende el teclado.
-2. Comprueba si se solicitó pausa o menú.
-3. Espera el siguiente tick.
-4. Ejecuta los subpasos de movimiento.
-5. Actualiza la pantalla.
-6. Comprueba si terminó la partida.
-
-### Colisiones
-
-La pelota se mueve entre las filas 3 y 21. Si intenta superar estos límites, cambia su dirección vertical.
-
-La paleta izquierda se evalúa en la columna 3 y la derecha en la columna 62. Existe contacto cuando:
-
-```text
-primera fila de la paleta ≤ fila de la pelota ≤ primera fila de la paleta + 4
-```
-
-Cada subpaso comprueba esta condición, incluso cuando aumenta la velocidad.
-
-`tocarPaleta` utiliza el indicador de acarreo como resultado:
-
-- `clc`: hubo contacto.
-- `stc`: hubo fallo.
-
-Cuando se anota un punto, se cancelan los subpasos restantes del cuadro y se prepara un nuevo saque.
-
-## 12. Pruebas
-
-Las pruebas deben ejecutarse en emu8086 y sus resultados reales deben registrarse en el informe técnico.
-
-| Prueba | Resultado esperado | Resultado real |
-|---|---|---|
-| Compilación | El archivo se compila sin errores. | Pendiente |
-| Controles | Cada jugador mueve su paleta. | Pendiente |
-| Límites | Las paletas permanecen dentro del tablero. | Pendiente |
-| Rebotes | La pelota rebota en ambos bordes horizontales. | Pendiente |
-| Colisiones | Ambas paletas devuelven la pelota. | Pendiente |
-| Puntuación | Cada fallo suma un punto al rival. | Pendiente |
-| Aceleración | VEL cambia de 05 a 06 y a 07. | Pendiente |
-| Pausa | La partida se detiene y continúa. | Pendiente |
-| Victoria | Gana quien alcanza cinco puntos. | Pendiente |
-| Revancha | Se reinician los puntajes sin cerrar el emulador. | Pendiente |
-| Récord | Se conserva durante la sesión. | Pendiente |
-
-Las comprobaciones aisladas de lógica no sustituyen las pruebas de pantalla, teclado y rendimiento dentro de emu8086.
-
-### El récord desaparece al cerrar
-
-Es el comportamiento actual: el récord se conserva únicamente durante la ejecución del programa.
-
-## 14. Uso educativo
+## Uso educativo
 
 Este proyecto fue desarrollado **con fines educativos** como parte del curso Arquitectura de Computadoras.
 
-Su propósito es aplicar conocimientos de programación en ensamblador, arquitectura 8086, manejo de memoria, interrupciones, procedimientos y lógica de videojuegos.
+Su propósito es aplicar conocimientos de arquitectura 8086, programación en ensamblador, manejo de registros, pila, interrupciones, memoria de video y lógica de videojuegos.
 
-La documentación describe la versión para dos jugadores con velocidad inicial 5 y máxima 7.
-
-## 15. Integrantes
+## Integrantes
 
 - **Warner Guevara C**
 - **Jordana Montoya G**
