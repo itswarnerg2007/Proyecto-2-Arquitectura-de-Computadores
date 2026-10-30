@@ -1,7 +1,14 @@
-; PING PONG 2 JUGADORES - Proyecto EIF205 - 8086 / emu8086
+; PING PONG INTERACTIVO - 2 JUGADORES - EIF205 - emu8086
+; Integrantes: Warner Guevara C y Jordana Montoya G.
+; Proyecto con fines educativos.
+; W/S: J1. Flechas: J2. Q/L: paleta grande, una vez por partida.
+; Barrera roja: columna 33, cuatro celdas, movimiento vertical.
+; Paletas normales: 5, 4 o 3 segun los puntos totales; poder: 7.
+; Convencion: registros generales temporales salvo preservacion indicada.
+; CALL/RET y PUSH/POP equilibran la pila; DS = CS; ES se preserva al dibujar.
 #make_COM#
 org 100h
-jmp inicio
+    jmp inicio
 
 IMPRIMIR macro cadena
     lea dx, cadena
@@ -14,7 +21,10 @@ menuTxt db 13,10,'       PING PONG - DUELO DE 2 JUGADORES',13,10
         db '       Izquierda: W/S | Derecha: flechas arriba/abajo',13,10
         db '       P: pausa | ESC: menu',13,10
         db '       Gana quien llegue primero a 5 puntos.',13,10
-        db '       Velocidad inicial 5, sube hasta 7.',13,10
+        db '       Velocidad 5 a 7. Obstaculo central movil.',13,10
+        db '       Paletas: 5, 4 y 3 celdas segun los puntos.',13,10
+        db '       Q: poder J1 | L: poder J2 (una vez por partida).',13,10
+        db '       El poder agranda tu paleta por 5 segundos.',13,10
         db '       Record de devoluciones seguidas de la sesion: $'
 pausaTxt db ' PAUSA: P CONTINUA, ESC MENU $'
 ganaTxt db 13,10,' JUGADOR 1 GANA! JUGADOR 2: GAME OVER.',13,10
@@ -26,7 +36,14 @@ derechaTxt db '   J2 FLECHAS: $'
 recordTxt db '   RECORD RALLY: $'
 rallyTxt db '   RALLY: $'
 velocidadTxt db '  VEL: $'
-ayudaTxt db ' Primero a 5 | W/S: izquierda | Flechas: derecha | P pausa | ESC menu$'
+ayudaTxt db ' W/S J1 | FLECHAS J2 | Q/L poder (1 uso) | P pausa | ESC menu$'
+tamTxt db ' TAM J1/J2: $'
+separadorTxt db '/$'
+poder1Txt db '   Q J1: $'
+poder2Txt db '   L J2: $'
+listoTxt db 'LISTO $'
+activoTxt db 'ACTIVO$'
+usadoTxt db 'USADO $'
 puntos db 0
 puntos2 db 0
 record db 0
@@ -44,6 +61,21 @@ anteriorPaleta db 10
 anteriorPaleta2 db 10
 dxPelota db -1
 dyPelota db 1
+; Datos de las nuevas mecanicas. Tamano real y anterior por jugador.
+tamBase db 5
+tam1 db 5
+tam2 db 5
+anteriorTam1 db 5
+anteriorTam2 db 5
+usado1 db 0
+usado2 db 0
+poder1 dw 0                 ; ticks de juego restantes; 91 equivale a unos 5 s
+poder2 dw 0
+obstaculoY db 9             ; columna fija 33, altura 4
+anteriorObstaculoY db 9
+direccionObstaculo db 1
+relojObstaculo dw 0
+deltaTick dw 1
 ultimoTick dw 0
 estado db 0                 ; 0 juego, 1 pausa, 2 menu, 3 gana J1, 4 gana J2
 
@@ -115,11 +147,25 @@ probarSalidaFinal:
 
 ; Reinicia la partida; el record se conserva en memoria.
 inicializar proc
-mov puntos, 0
+    mov puntos, 0
     mov puntos2, 0
     mov paleta, 10
     mov paleta2, 10
     mov estado, 0
+    mov usado1, 0
+    mov usado2, 0
+    mov poder1, 0
+    mov poder2, 0
+    mov tamBase, 5
+    mov tam1, 5
+    mov tam2, 5
+    mov anteriorTam1, 5
+    mov anteriorTam2, 5
+    mov obstaculoY, 9
+    mov anteriorObstaculoY, 9
+    mov direccionObstaculo, 1
+    mov relojObstaculo, 0
+    mov deltaTick, 1
     call centrarPelota
     mov anteriorX, 32
     mov anteriorY, 12
@@ -127,7 +173,6 @@ mov puntos, 0
     mov anteriorPaleta2, 10
     call limpiar
     call dibujarBordes
-    ; Instrucciones fijas en fila 24.
     mov ah, 02h
     xor bh, bh
     mov dx, 1800h
@@ -140,7 +185,7 @@ mov puntos, 0
 inicializar endp
 
 centrarPelota proc
-mov pelotaX, 32
+    mov pelotaX, 32
     mov pelotaY, 12
     mov dxPelota, -1
     mov dyPelota, 1
@@ -152,7 +197,7 @@ centrarPelota endp
 
 ; Entrada no bloqueante por BIOS.
 teclado proc
-mov ah, 01h
+    mov ah, 01h
     int 16h
     jnz hayTecla
     ret
@@ -178,6 +223,22 @@ alternarPausa:
     mov ultimoTick, ax
     ret
 teclaMovimiento:
+    cmp al, 'q'
+    je activarJ1
+    cmp al, 'Q'
+    je activarJ1
+    cmp al, 'l'
+    je activarJ2
+    cmp al, 'L'
+    je activarJ2
+    jmp probarPaletas
+activarJ1:
+    call activarPoder1
+    ret
+activarJ2:
+    call activarPoder2
+    ret
+probarPaletas:
     ; Cada tecla pertenece a un solo jugador.
     cmp al, 'w'
     je arribaJ1
@@ -198,7 +259,9 @@ arribaJ1:
     dec paleta
     ret
 abajoJ1:
-    cmp paleta, 17
+    mov al, 22
+    sub al, tam1
+    cmp paleta, al
     jae finMovimiento
     inc paleta
     ret
@@ -208,7 +271,9 @@ arribaJ2:
     dec paleta2
     ret
 abajoJ2:
-    cmp paleta2, 17
+    mov al, 22
+    sub al, tam2
+    cmp paleta2, al
     jae finMovimiento
     inc paleta2
 finMovimiento:
@@ -232,21 +297,23 @@ espera:
     cmp estado, 0
     jne finEspera
     call leerTick
+    mov bx, ax
     sub ax, ultimoTick
     cmp ax, 1
     jb espera
-    call leerTick
-    mov ultimoTick, ax
+    mov deltaTick, ax
+    mov ultimoTick, bx
 finEspera:
     ret
 esperarTiempo endp
 
 ; Movimiento por celdas, rebotes y colision con paleta.
 actualizar proc
-cmp estado, 0
+    cmp estado, 0
     je empezarMovimiento
     ret
 empezarMovimiento:
+    call actualizarExtras
     mov al, velocidad
     mov pasos, al
 siguientePaso:
@@ -279,9 +346,22 @@ nuevaFila:
     mov al, pelotaX
     add al, dxPelota
     mov pelotaX, al
+    cmp al, 33
+    jne comprobarIzquierda
+    mov al, pelotaY
+    cmp al, obstaculoY
+    jb finObstaculo
+    sub al, obstaculoY
+    cmp al, 3
+    ja finObstaculo
+    neg dxPelota
+finObstaculo:
+    ret
+comprobarIzquierda:
     cmp al, 3
     jne comprobarDerecha
     mov bl, paleta
+    mov cl, tam1
     call tocarPaleta
     jnc reboteIzquierdo
     call puntoJ2
@@ -293,6 +373,7 @@ comprobarDerecha:
     cmp al, 62
     jne finMoverPelota
     mov bl, paleta2
+    mov cl, tam2
     call tocarPaleta
     jnc reboteDerecho
     call puntoJ1
@@ -303,16 +384,18 @@ finMoverPelota:
     ret
 moverPelota endp
 
-; BL = primera fila de la paleta. CF=0 contacto, CF=1 fallo.
+; BL = primera fila, CL = altura real. CF=0 contacto, CF=1 fallo.
 ; Devuelve la pelota hacia arriba o abajo segun el punto de impacto.
 tocarPaleta proc
     mov al, pelotaY
     cmp al, bl
     jb noContacto
     sub al, bl
-    cmp al, 4
-    ja noContacto
-    cmp al, 2
+    cmp al, cl
+    jae noContacto
+    mov ch, cl
+    shr ch, 1
+    cmp al, ch
     jb golpeSuperior
     ja golpeInferior
     jmp contarRebote
@@ -352,6 +435,7 @@ tocarPaleta endp
 
 puntoJ1 proc
     inc puntos
+    call ajustarTamanos
     mov pasos, 0
     call centrarPelota
     mov dxPelota, 1
@@ -364,6 +448,7 @@ puntoJ1 endp
 
 puntoJ2 proc
     inc puntos2
+    call ajustarTamanos
     mov pasos, 0
     call centrarPelota
     cmp puntos2, 5
@@ -373,12 +458,12 @@ puntoJ2Fin:
     ret
 puntoJ2 endp
 
-; Mensaje de pausa en fila 1, sin reconstruir el tablero.
+; Mensaje de pausa en fila 23; la fila 1 conserva poderes y tamanos.
 mostrarPausa proc
     push es
     mov ax, 0b800h
     mov es, ax
-    mov di, 160
+    mov di, 3680
     mov ax, 0720h
     mov cx, 80
     cld
@@ -388,7 +473,7 @@ mostrarPausa proc
     jne finMostrarPausa
     mov ah, 02h
     xor bh, bh
-    mov dx, 0100h
+    mov dx, 1700h
     int 10h
     IMPRIMIR pausaTxt
 finMostrarPausa:
@@ -433,7 +518,7 @@ numero endp
 
 ; Dibuja los bordes una sola vez al comenzar la partida.
 dibujarBordes proc
-push es
+    push es
     mov ax, 0b800h
     mov es, ax
     mov di, 320
@@ -451,7 +536,6 @@ dibujarBordes endp
 ; Modo texto B800:0000: dos bytes por celda.
 ; Desplazamiento = 2 * (fila * 80 + columna).
 dibujar proc
-; El marcador se actualiza solo si cambia: menos interrupciones.
     cmp marcadorSucio, 0
     je dibujarObjetos
     call marcador
@@ -459,25 +543,37 @@ dibujarObjetos:
     push es
     mov ax, 0b800h
     mov es, ax
-    ; Borra posiciones anteriores; nunca borra el tablero completo.
+    ; Borra objetos anteriores usando sus alturas anteriores.
     mov dl, anteriorX
     mov dh, anteriorY
     mov ax, 0720h
     call celda
     mov dh, anteriorPaleta
     mov dl, 3
-    mov ax, 0720h
+    mov cl, anteriorTam1
     call pintarPaleta
     mov dh, anteriorPaleta2
     mov dl, 62
+    mov cl, anteriorTam2
     call pintarPaleta
-    ; Paletas actuales, verde y magenta.
+    mov dh, anteriorObstaculoY
+    mov dl, 33
+    mov cl, 4
+    call pintarPaleta
+    ; Repinta obstaculo, paletas y por ultimo la pelota.
+    mov dh, obstaculoY
+    mov dl, 33
+    mov cl, 4
+    mov ax, 0c23h
+    call pintarPaleta
     mov dh, paleta
     mov dl, 3
+    mov cl, tam1
     mov ax, 0a7ch
     call pintarPaleta
     mov dh, paleta2
     mov dl, 62
+    mov cl, tam2
     mov ax, 0d7ch
     call pintarPaleta
     mov dl, pelotaX
@@ -492,6 +588,12 @@ dibujarObjetos:
     mov anteriorPaleta, al
     mov al, paleta2
     mov anteriorPaleta2, al
+    mov al, tam1
+    mov anteriorTam1, al
+    mov al, tam2
+    mov anteriorTam2, al
+    mov al, obstaculoY
+    mov anteriorObstaculoY, al
     pop es
     ret
 dibujar endp
@@ -524,11 +626,11 @@ celda proc
     ret
 celda endp
 
-; Pinta cinco celdas verticales; conserva todos los registros usados.
+; CL = altura; pinta una columna vertical y preserva CX y DX.
 pintarPaleta proc
     push cx
     push dx
-    mov cx, 5
+    xor ch, ch
 pintarCinco:
     call celda
     inc dh
@@ -558,6 +660,174 @@ marcador proc
     IMPRIMIR velocidadTxt
     mov al, velocidad
     call numero
+    call mostrarExtras
     mov marcadorSucio, 0
     ret
 marcador endp
+
+
+; La base baja de 5 a 4 con dos puntos totales y a 3 con cuatro.
+; Un poder activo mantiene 7 celdas hasta agotar sus ticks.
+ajustarTamanos proc
+    mov al, puntos
+    add al, puntos2
+    mov tamBase, 5
+    cmp al, 2
+    jb seleccionarAlturas
+    mov tamBase, 4
+    cmp al, 4
+    jb seleccionarAlturas
+    mov tamBase, 3
+seleccionarAlturas:
+    mov al, tamBase
+    mov tam1, al
+    mov tam2, al
+    cmp poder1, 0
+    je revisarPoder2
+    mov tam1, 7
+revisarPoder2:
+    cmp poder2, 0
+    je limitarPaletas
+    mov tam2, 7
+limitarPaletas:
+    ; La ultima celda no puede superar la fila 21.
+    mov al, 22
+    sub al, tam1
+    cmp paleta, al
+    jbe limitarJ2
+    mov paleta, al
+limitarJ2:
+    mov al, 22
+    sub al, tam2
+    cmp paleta2, al
+    jbe finAjustarTamanos
+    mov paleta2, al
+finAjustarTamanos:
+    mov marcadorSucio, 1
+    ret
+ajustarTamanos endp
+
+; Un uso por jugador y por partida completa (no por punto).
+activarPoder1 proc
+    cmp usado1, 0
+    jne finActivarPoder1
+    mov usado1, 1
+    mov poder1, 91
+    call ajustarTamanos
+finActivarPoder1:
+    ret
+activarPoder1 endp
+
+activarPoder2 proc
+    cmp usado2, 0
+    jne finActivarPoder2
+    mov usado2, 1
+    mov poder2, 91
+    call ajustarTamanos
+finActivarPoder2:
+    ret
+activarPoder2 endp
+
+; Corre solo durante el juego; la pausa no consume el poder.
+actualizarExtras proc
+    call descontarPoderes
+    ; Obstaculo: una fila por cada dos ticks, altura de cuatro.
+    mov ax, deltaTick
+    add ax, relojObstaculo
+    ; Limita recuperaciones tras retrasos largos del emulador.
+    cmp ax, 32
+    jbe guardarRelojObstaculo
+    mov ax, 32
+guardarRelojObstaculo:
+    mov relojObstaculo, ax
+bucleObstaculo:
+    cmp relojObstaculo, 2
+    jb finActualizarExtras
+    sub relojObstaculo, 2
+    cmp direccionObstaculo, 1
+    jne obstaculoArriba
+    cmp obstaculoY, 18
+    jb obstaculoBaja
+    mov direccionObstaculo, -1
+    dec obstaculoY
+    jmp bucleObstaculo
+obstaculoBaja:
+    inc obstaculoY
+    jmp bucleObstaculo
+obstaculoArriba:
+    cmp obstaculoY, 3
+    ja obstaculoSube
+    mov direccionObstaculo, 1
+    inc obstaculoY
+    jmp bucleObstaculo
+obstaculoSube:
+    dec obstaculoY
+    jmp bucleObstaculo
+finActualizarExtras:
+    ret
+actualizarExtras endp
+
+descontarPoderes proc
+    cmp poder1, 0
+    je descontarJ2
+    mov ax, deltaTick
+    cmp ax, poder1
+    jae caducaJ1
+    sub poder1, ax
+    jmp descontarJ2
+caducaJ1:
+    mov poder1, 0
+    call ajustarTamanos
+descontarJ2:
+    cmp poder2, 0
+    je finDescontarPoderes
+    mov ax, deltaTick
+    cmp ax, poder2
+    jae caducaJ2
+    sub poder2, ax
+    ret
+caducaJ2:
+    mov poder2, 0
+    call ajustarTamanos
+finDescontarPoderes:
+    ret
+descontarPoderes endp
+
+mostrarExtras proc
+    mov ah, 02h
+    xor bh, bh
+    mov dx, 0100h
+    int 10h
+    IMPRIMIR tamTxt
+    mov al, tam1
+    call numero
+    IMPRIMIR separadorTxt
+    mov al, tam2
+    call numero
+    IMPRIMIR poder1Txt
+    cmp poder1, 0
+    jne mostrarActivo1
+    cmp usado1, 0
+    jne mostrarUsado1
+    IMPRIMIR listoTxt
+    jmp mostrarSegundo
+mostrarActivo1:
+    IMPRIMIR activoTxt
+    jmp mostrarSegundo
+mostrarUsado1:
+    IMPRIMIR usadoTxt
+mostrarSegundo:
+    IMPRIMIR poder2Txt
+    cmp poder2, 0
+    jne mostrarActivo2
+    cmp usado2, 0
+    jne mostrarUsado2
+    IMPRIMIR listoTxt
+    ret
+mostrarActivo2:
+    IMPRIMIR activoTxt
+    ret
+mostrarUsado2:
+    IMPRIMIR usadoTxt
+    ret
+mostrarExtras endp
